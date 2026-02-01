@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Blurb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+</head>
+<body id="body">
+    <template id="tile-template">
+        <div class="tile" onclick="showChat(this)">
+            <img class="profile-pic">
+            <div style="width:100%"></div>
+            <p class="user-name"></p>
+        </div>
+    </template>
+
+    <div id="tile-container"></div>
+
+    <div id="the-bar">
+        <div class="bar-image-wrapper" onclick="window.location='profile.html'" id="profile-button">
+            <img class="bar-image" id="user-img">
+        </div>
+        <div class="bar-image-wrapper" id="home">
+            <img class="bar-image" src="home.png">
+        </div>
+        <div class="bar-image-wrapper" onclick="window.location='friends.html'">
+            <img class="bar-image" src="friends.png">
+        </div>
+    </div>
+</body>
+<script>
+    function arraysEqual(a, b) {
+        return a.length === b.length &&
+            a.every((val, i) => val === b[i])
+    }
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+
+    const tileTemplate = document.getElementById("tile-template");
+    const tileContainer = document.getElementById("tile-container");
+
+    const friendTemplate = document.getElementById("friend-template");
+    const friendsContainer = document.getElementById("friends-container");
+
+    const requestTemplate = document.getElementById("request-template");
+    const requestsContainer = document.getElementById("requests-container");
+    
+    const chatTemplate = document.getElementById("chat-template");
+    const chats = document.getElementById("chats");
+
+    var username = localStorage["loggedUsername"];
+
+    if(!username) {
+        window.location = "signup.html"
+    }
+
+    async function setUserPfp() {
+        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+username);
+        const pfpFilename = await pfpFilenameObject.text();
+        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        document.getElementById("user-img").src = pfpPath;
+    }
+
+    setUserPfp();
+    
+    async function getMyUserData() {
+        return await fetchData("http://161.97.214.82/get-user-data?user="+username);
+    }
+
+    async function addTile(tileInfo) {
+        const clone = tileTemplate.content.cloneNode(true);
+        
+        clone.querySelector(".profile-pic").src = tileInfo.pfp;
+        clone.querySelector(".tile").id = tileInfo.username;
+
+        const tileUserData = await fetchData("http://161.97.214.82/get-user-data?user="+tileInfo.username);
+        clone.querySelector(".user-name").textContent = tileUserData.displayname;
+        
+        tileContainer.appendChild(clone);
+    }
+
+    async function showChat(tile) {
+        const currentChat = await fetchData("http://161.97.214.82/get-chat-id?users=" + username + "," + tile.id);
+        window.location = "chat.html?chatid=" + currentChat + "&user=" + tile.id;
+    }
+
+    async function addUser(lUsername) {
+        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+lUsername);
+        const pfpFilename = await pfpFilenameObject.text();
+        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        addTile({"pfp":pfpPath,"username":lUsername});
+    }
+
+    async function addFriends() {
+        tileContainer.innerHTML = "";
+        const myUserData = await getMyUserData();
+        for(friend of myUserData.friends) {
+            addUser(friend);
+        }
+    }
+
+    addFriends();
+</script>
+</html>

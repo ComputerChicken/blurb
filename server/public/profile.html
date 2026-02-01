@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Profile | Blurb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+</head>
+<body id="body" style="margin: 0;">
+    <div id="big-image-wrapper">
+        <img id="big-image">
+    </div>
+    <div id="profile-info-wrapper">
+        <p class="profile-text" id="profile-display-name">Lebron James</p>
+        <p class="profile-text" id="profile-username">@lebron0</p>
+        <div id="relationship-status-wrapper">
+            <p class="profile-text" id="rs-text">Relationship Status: </p>
+            <p id="relationship-status">Single, looking for a relationship</p>
+        </div>
+    </div>
+    <div id="the-bar">
+        <div class="bar-image-wrapper" onclick="window.location='profile.html'" id="profile-button">
+            <img class="bar-image" id="user-img">
+        </div>
+        <div class="bar-image-wrapper" onclick="window.location='index.html'" id="home">
+            <img class="bar-image" src="home.png">
+        </div>
+        <div class="bar-image-wrapper" onclick="window.location='friends.html'">
+            <img class="bar-image" src="friends.png">
+        </div>
+    </div>
+</body>
+<script>
+    function arraysEqual(a, b) {
+        return a.length === b.length &&
+            a.every((val, i) => val === b[i])
+    }
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    async function getUserData(lUsername) {
+        return await fetchData("http://161.97.214.82/get-user-data?user="+lUsername);
+    }
+
+    var username = localStorage["loggedUsername"];
+
+    var url = new URL(window.location.href);
+    var user = url.searchParams.get("username");
+
+    
+
+    async function getUserPfp(lUsername) {
+        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+lUsername);
+        const pfpFilename = await pfpFilenameObject.text();
+        return "http://161.97.214.82/pfps/" + pfpFilename;
+    }
+
+    async function setUserPfp() {
+        document.getElementById("user-img").src = await getUserPfp(username);
+    }
+
+    setUserPfp();
+
+    async function setBody() {
+        var userData;
+        var profileUsername;
+        if(user === undefined) {
+            profileUsername = username;
+            userData = await getUserData(username);
+        } else {
+            profileUsername = user;
+            userData = await getUserData(user);
+            console.log(userData);
+        }
+        document.getElementById("big-image").src = await getUserPfp(profileUsername);
+        document.getElementById("relationship-status").textContent = userData.rs;
+    }
+
+    setBody();
+</script>
+</html>

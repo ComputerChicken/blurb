@@ -1,0 +1,24 @@
+{
+  "name": {
+    "lebron0": "Darragh B",
+    "darragh": "Lebron James"
+  },
+  "chatters": [
+    "darragh",
+    "lebron0"
+  ],
+  "contents": [
+    {
+      "user": "darragh",
+      "chat": "hello"
+    },
+    {
+      "user": "darragh",
+      "chat": "hi again"
+    },
+    {
+      "user": "lebron0",
+      "chat": "hi"
+    }
+  ]
+}

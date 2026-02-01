@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Blurb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+</head>
+<body style="overflow: hidden;">
+    <div id="signup-wrapper">
+        <div id="signup-container">
+            <p style="font-size: 30px; margin: 0;">Sign In</p>
+            <p style="color:#f00; font-weight: 100;" id="error-text"></p>
+            <input placeholder="Username" id="username">
+            <input type="password" placeholder="Password" id="password">
+            <p onclick="window.location = 'signup.html'" style="margin: 0; font-size: 15px; color: #999; font-weight: 100;">Don't have an account? Sign Up</p>
+            <button onclick="sendUserData()">Alr let's go</button>
+        </div>
+    </div>
+</body>
+<script>
+    async function sendUserData() {
+        const data = {
+            username: document.getElementById("username").value.toLowerCase(),
+            password: document.getElementById("password").value
+        }
+
+        const res = await fetch("http://161.97.214.82/auth", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        });
+        
+        const resText = await res.text();
+
+        if(resText == "true") {
+            console.log("Signed In");
+            localStorage["loggedUsername"] = document.getElementById("username").value.toLowerCase();
+            window.location = "index.html"
+        } else {
+            document.getElementById("error-text").textContent = resText;
+        }
+    }
+</script>
+</html>

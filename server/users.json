@@ -1,0 +1,41 @@
+{
+  "lebron0": {
+    "displayname": "Lebron James",
+    "password": "password",
+    "friends": [
+      "darragh"
+    ],
+    "requests": [],
+    "rs": "Single, looking for a relationship"
+  },
+  "darragh": {
+    "displayname": "Darragh B",
+    "password": "password",
+    "friends": [
+      "lebron0"
+    ],
+    "requests": [],
+    "rs": "idk man"
+  },
+  "test": {
+    "displayname": "Test",
+    "password": "test",
+    "friends": [],
+    "requests": [],
+    "rs": "idfk it's a test account"
+  },
+  "testpfp": {
+    "displayname": "Testpfp",
+    "password": "testpfp",
+    "friends": [],
+    "requests": [],
+    "rs": "idfk it's a test account"
+  },
+  "testrs": {
+    "displayname": "Testrs",
+    "password": "testrs",
+    "friends": [],
+    "requests": [],
+    "rs": "Single, not looking for anything"
+  }
+}
