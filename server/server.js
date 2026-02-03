@@ -77,6 +77,22 @@ function createUser(username, password, displayname, rs) {
     return true;
 }
 
+function updateUser(username, param, val) {
+    const data = fs.readFileSync("users.json", "utf8")
+
+    const jsonData = JSON.parse(data);
+
+    jsonData[username][param] = val;
+
+    const updatedJsonString = JSON.stringify(jsonData, null, 2);
+
+    fs.writeFileSync("users.json", updatedJsonString, "utf8");
+
+    console.log(chalk.blue(chalk.bold('Data successfully added to the JSON file!')));
+
+    return true;
+}
+
 function sendRequest(requester, target) {
     const data = fs.readFileSync("users.json", "utf8")
 
@@ -133,9 +149,31 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueName + path.extname(file.originalname));
+    if(req.body.username) {
+        fs.readdir("./uploads", (err, files) => {
+            if (err) {
+                console.error('Error reading directory:', err);
+                return;
+            }
+            for(const fileName of files) {
+                if(fileName.split(".")[0] == req.body.username && fileName != req.body.username + path.extname(file.originalname)) {
+                    fs.unlink("./uploads/"+fileName, (err) => {
+                        if (err) {
+                            console.error('An error occurred:', err);
+                        } else {
+                            console.log('File deleted successfully!');
+                        }
+                    });
+                }
+            };
+        });
+        console.log("Uploading story for user " + req.body.username);
+        cb(null, req.body.username + path.extname(file.originalname));
+    } else {
+        const uniqueName =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, uniqueName + path.extname(file.originalname));
+    }
   }
 });
 
@@ -153,7 +191,7 @@ const pfpStorage = multer.diskStorage({
     cb(null, "pfps/");
   },
   filename: (req, file, cb) => {
-    console.log("Uploading pfp for user " + req.body.username)
+    console.log("Uploading pfp for user " + req.body.username);
     cb(null, req.body.username + path.extname(file.originalname));
   }
 });
@@ -170,8 +208,10 @@ app.post("/pfp-upload", pfpUpload.single("file"), (req, res) => {
 });
 
 const pfpsPath = path.join(__dirname, "pfps");
+const uploadsPath = path.join(__dirname, "uploads");
 
 app.use("/pfps", express.static(pfpsPath));
+app.use("/uploads", express.static(uploadsPath));
 
 app.use(express.json());
 
@@ -203,7 +243,18 @@ app.post("/accept-request", (req, res) => {
 app.post("/create-user", async (req, res) => {
     const userData = req.body;
     console.log("Create user request " + chalk.blue(chalk.bold(JSON.stringify(userData))));
-    const returnText = await createUser(userData.username, userData.password, userData.displayname, userData.rs);
+    const returnText = createUser(userData.username, userData.password, userData.displayname, userData.rs);
+    res.send(
+        returnText
+    );
+    console.log("Returning " + chalk.blue(chalk.bold(returnText)))
+});
+
+// POST endpoint
+app.post("/update-user", async (req, res) => {
+    const userData = req.body;
+    console.log("Update user request " + chalk.blue(chalk.bold(JSON.stringify(userData))));
+    const returnText = updateUser(userData.username, userData.param, userData.val);
     res.send(
         returnText
     );
@@ -272,6 +323,33 @@ app.get("/get-pfp-path", (req, res) => {
         };
         if(!sent) {
             res.send("default.jpg");
+        }
+    });
+});
+
+// GET endpoint
+app.get("/get-story-path", (req, res) => {
+    // Incoming info from query params
+    const { username } = req.query;
+
+    console.log("Resquest to get user story with username " + chalk.green(chalk.bold(username)));
+
+    var sent = false;
+
+    // Process the incoming data
+    fs.readdir("./uploads", (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            return;
+        }
+        for(const file of files) {
+            if(file.split(".")[0] == username) {
+                res.send(file);
+                sent = true;
+            }
+        };
+        if(!sent) {
+            res.send("none");
         }
     });
 });

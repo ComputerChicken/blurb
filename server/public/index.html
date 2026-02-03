@@ -31,6 +31,8 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     function arraysEqual(a, b) {
         return a.length === b.length &&
             a.every((val, i) => val === b[i])
@@ -72,16 +74,16 @@
     }
 
     async function setUserPfp() {
-        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+username);
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+username);
         const pfpFilename = await pfpFilenameObject.text();
-        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
         document.getElementById("user-img").src = pfpPath;
     }
 
     setUserPfp();
     
     async function getMyUserData() {
-        return await fetchData("http://161.97.214.82/get-user-data?user="+username);
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+username);
     }
 
     async function addTile(tileInfo) {
@@ -90,21 +92,21 @@
         clone.querySelector(".profile-pic").src = tileInfo.pfp;
         clone.querySelector(".tile").id = tileInfo.username;
 
-        const tileUserData = await fetchData("http://161.97.214.82/get-user-data?user="+tileInfo.username);
+        const tileUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+tileInfo.username);
         clone.querySelector(".user-name").textContent = tileUserData.displayname;
         
         tileContainer.appendChild(clone);
     }
 
     async function showChat(tile) {
-        const currentChat = await fetchData("http://161.97.214.82/get-chat-id?users=" + username + "," + tile.id);
+        const currentChat = await fetchData("http://161.97.214.82:"+port+"/get-chat-id?users=" + username + "," + tile.id);
         window.location = "chat.html?chatid=" + currentChat + "&user=" + tile.id;
     }
 
     async function addUser(lUsername) {
-        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+lUsername);
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+lUsername);
         const pfpFilename = await pfpFilenameObject.text();
-        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
         addTile({"pfp":pfpPath,"username":lUsername});
     }
 

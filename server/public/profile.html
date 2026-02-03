@@ -12,11 +12,11 @@
         <img id="big-image">
     </div>
     <div id="profile-info-wrapper">
-        <p class="profile-text" id="profile-display-name">Lebron James</p>
-        <p class="profile-text" id="profile-username">@lebron0</p>
+        <p class="profile-text" id="profile-display-name"></p>
+        <p class="profile-text" id="profile-username"></p>
         <div id="relationship-status-wrapper">
             <p class="profile-text" id="rs-text">Relationship Status: </p>
-            <p id="relationship-status">Single, looking for a relationship</p>
+            <p id="relationship-status"></p>
         </div>
     </div>
     <div id="the-bar">
@@ -32,6 +32,8 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     function arraysEqual(a, b) {
         return a.length === b.length &&
             a.every((val, i) => val === b[i])
@@ -54,7 +56,7 @@
     }
 
     async function getUserData(lUsername) {
-        return await fetchData("http://161.97.214.82/get-user-data?user="+lUsername);
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+lUsername);
     }
 
     var username = localStorage["loggedUsername"];
@@ -65,9 +67,9 @@
     
 
     async function getUserPfp(lUsername) {
-        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+lUsername);
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+lUsername);
         const pfpFilename = await pfpFilenameObject.text();
-        return "http://161.97.214.82/pfps/" + pfpFilename;
+        return "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
     }
 
     async function setUserPfp() {
@@ -79,16 +81,93 @@
     async function setBody() {
         var userData;
         var profileUsername;
-        if(user === undefined) {
+        if(user === null) {
             profileUsername = username;
-            userData = await getUserData(username);
+            userData = await getUserData(profileUsername);
         } else {
             profileUsername = user;
-            userData = await getUserData(user);
-            console.log(userData);
+            userData = await getUserData(profileUsername);
         }
         document.getElementById("big-image").src = await getUserPfp(profileUsername);
         document.getElementById("relationship-status").textContent = userData.rs;
+        document.getElementById("profile-display-name").textContent = userData.displayname;
+        document.getElementById("profile-username").textContent = "@"+profileUsername;
+
+        if(userData.friends.includes(username)) {
+            const elemToAdd = document.createElement("p");
+            elemToAdd.className = "profile-text";
+            elemToAdd.textContent = "You are friends with " + userData.displayname.split(" ")[0];
+            document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
+        }
+
+        var elemToAdd = document.createElement("div");
+        elemToAdd.style.height = "25px";
+        document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
+
+        const storyPathObj = await fetch("http://161.97.214.82:"+port+"/get-story-path?username="+profileUsername);
+        const storyFilename = await storyPathObj.text();
+
+        if(storyFilename == "none") {
+            if(username == profileUsername) {
+                elemToAdd = document.createElement("p");
+                elemToAdd.className = "profile-text";
+                elemToAdd.id = "no-story";
+                elemToAdd.textContent = "You don't have a story yet, boring!"
+                document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
+            }
+        } else {
+            const storyHeader = document.createElement("p");
+            storyHeader.className = "profile-text";
+            storyHeader.id = "story-header";
+            storyHeader.textContent = "Story";
+            document.getElementById("profile-info-wrapper").appendChild(storyHeader);
+
+            const profileStoryContainer = document.createElement("div");
+            profileStoryContainer.id = "profile-story-container";
+            document.getElementById("profile-info-wrapper").appendChild(profileStoryContainer);
+
+            const storyPath = "http://161.97.214.82:"+port+"/uploads/" + storyFilename;
+            const imgExts = ["jpg","jpeg","png","gif","webp","svg","avif","apng","ico"]
+            if(storyFilename.endsWith("txt")) {
+                const textStoryObj = await fetch(storyPath);
+                const textStory = await textStoryObj.text();
+                document.getElementById("profile-story-container").textContent = textStory
+            } else {
+                var isImg = false;
+                for(const ext of imgExts) {
+                    if(storyFilename.endsWith(ext)) {
+                        isImg = true;
+                        break;
+                    }
+                }
+                if(isImg) {
+                    const imgElem = document.createElement("img");
+                    imgElem.src = storyPath;
+                    imgElem.className = "story-image";
+                    document.getElementById("profile-story-container").appendChild(imgElem);
+                } else {
+                    const vidElem = document.createElement("video");
+                    vidElem.src = storyPath;
+                    vidElem.autoplay = true;
+                    vidElem.loop = true;
+                    vidElem.muted = true;
+                    vidElem.playsInline = true;
+                    vidElem.controls = false;
+                    vidElem.addEventListener('click', () => {
+                        vidElem.muted = !vidElem.muted;
+                    });
+                    document.getElementById("profile-story-container").appendChild(vidElem);
+                }
+            }
+        }
+
+        if(username == profileUsername) {
+            elemToAdd = document.createElement("button");
+            elemToAdd.textContent = "✏️ Edit your story";
+            elemToAdd.id = "edit-story";
+            elemToAdd.onclick = function() {window.location="createstory.html"}
+            document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
+        }
     }
 
     setBody();

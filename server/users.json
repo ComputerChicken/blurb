@@ -3,7 +3,8 @@
     "displayname": "Lebron James",
     "password": "password",
     "friends": [
-      "darragh"
+      "darragh",
+      "testpfp"
     ],
     "requests": [],
     "rs": "Single, looking for a relationship"
@@ -12,7 +13,8 @@
     "displayname": "Darragh B",
     "password": "password",
     "friends": [
-      "lebron0"
+      "lebron0",
+      "testpfp"
     ],
     "requests": [],
     "rs": "idk man"
@@ -20,14 +22,20 @@
   "test": {
     "displayname": "Test",
     "password": "test",
-    "friends": [],
+    "friends": [
+      "testpfp"
+    ],
     "requests": [],
     "rs": "idfk it's a test account"
   },
   "testpfp": {
     "displayname": "Testpfp",
     "password": "testpfp",
-    "friends": [],
+    "friends": [
+      "lebron0",
+      "darragh",
+      "test"
+    ],
     "requests": [],
     "rs": "idfk it's a test account"
   },

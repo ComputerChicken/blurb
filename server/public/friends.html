@@ -8,6 +8,13 @@
     <link rel="icon" type="image/x-icon" href="/logo.png">
 </head>
 <body id="body">
+    <template id="story-template">
+        <div class="story">
+            <p class="story-header">Lebron James</p>
+            <div class="friend-story-container"></div>
+        </div>    
+    </template>
+
     <template id="friend-template">
         <div class="friend">
             <div class="friend-info-wrapper">
@@ -30,10 +37,23 @@
         </div>
     </template>
 
+    <div id="friends-header">
+        <div id="story-select" onclick="showPeople()" class="selected-header-item" style="width:100%;">
+            <div class="stupid-div">
+                Stories
+            </div>
+        </div>
+        <div id="people-select" onclick="showFriends()" style="width:100%;">
+            <div class="stupid-div">
+                People
+            </div>
+        </div>
+    </div>
+
     <div id="friends-bg"></div>
 
     <div id="friends-wrapper">
-        <div style="height:5vh; width:100vw;"></div>
+        <div style="height:10vh; width:100vw;"></div>
         <div id="requests-container">
             <p id="requests-header">Requests</p>
         </div>
@@ -41,6 +61,8 @@
             <p id="people-you-might-know">People you might know</p>
         </div>
     </div>
+
+    <div id="stories-container"></div>
 
     <div id="the-bar">
         <div class="bar-image-wrapper" onclick="window.location='profile.html'" id="profile-button">
@@ -55,6 +77,8 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     function arraysEqual(a, b) {
         return a.length === b.length &&
             a.every((val, i) => val === b[i])
@@ -77,7 +101,7 @@
     }
 
     async function getMyUserData() {
-        return await fetchData("http://161.97.214.82/get-user-data?user="+username);
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+username);
     }
 
     const friendTemplate = document.getElementById("friend-template");
@@ -86,6 +110,9 @@
     const requestTemplate = document.getElementById("request-template");
     const requestsContainer = document.getElementById("requests-container");
 
+    const storyTemplate = document.getElementById("story-template");
+    const storiesContainer = document.getElementById("stories-container");
+
     var username = localStorage["loggedUsername"];
 
     if(!username) {
@@ -93,16 +120,87 @@
     }
 
     async function setUserPfp() {
-        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+username);
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+username);
         const pfpFilename = await pfpFilenameObject.text();
-        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
         document.getElementById("user-img").src = pfpPath;
     }
 
     setUserPfp();
 
+    function showFriends() {
+        document.getElementById("friends-wrapper").style.visibility = "visible";
+        document.getElementById("stories-container").style.visibility = "hidden";
+        document.getElementById("people-select").className = "selected-header-item";
+        document.getElementById("story-select").className = "";
+    }
+
+    function showPeople() {
+        document.getElementById("friends-wrapper").style.visibility = "hidden";
+        document.getElementById("stories-container").style.visibility = "visible";
+        document.getElementById("people-select").className = "";
+        document.getElementById("story-select").className = "selected-header-item";
+    }
+
+    async function addStories() {
+        const myUserData = await getMyUserData();
+
+        for(lUsername of myUserData.friends) {
+            const clone = storyTemplate.content.cloneNode(true);
+            
+            console.log(lUsername)
+            const storyPathObj = await fetch("http://161.97.214.82:"+port+"/get-story-path?username="+lUsername);
+            const storyFilename = await storyPathObj.text();
+            const storyPath = "http://161.97.214.82:"+port+"/uploads/"+storyFilename;
+
+            const lUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+lUsername);
+            
+            console.log(lUserData.displayname);
+            clone.querySelector(".story-header").textContent = lUserData.displayname;
+
+            if(storyFilename != "none") {
+                const imgExts = ["jpg","jpeg","png","gif","webp","svg","avif","apng","ico"]
+                if(storyFilename.endsWith("txt")) {
+                    const textStoryObj = await fetch(storyPath);
+                    const textStory = await textStoryObj.text();
+                    clone.querySelector(".friend-story-container").style.overflow = "scroll";
+                    clone.querySelector(".friend-story-container").textContent = textStory;
+                } else {
+                    var isImg = false;
+                    for(const ext of imgExts) {
+                        if(storyFilename.endsWith(ext)) {
+                            isImg = true;
+                            break;
+                        }
+                    }
+                    if(isImg) {
+                        const imgElem = document.createElement("img");
+                        imgElem.src = storyPath;
+                        imgElem.className = "story-image";
+                        clone.querySelector(".friend-story-container").appendChild(imgElem);
+                    } else {
+                        const vidElem = document.createElement("video");
+                        vidElem.src = storyPath;
+                        vidElem.autoplay = true;
+                        vidElem.loop = true;
+                        vidElem.muted = true;
+                        vidElem.playsInline = true;
+                        vidElem.controls = false;
+                        vidElem.addEventListener('click', () => {
+                            vidElem.muted = !vidElem.muted;
+                        });
+                        clone.querySelector(".friend-story-container").appendChild(vidElem);
+                    }
+                }
+                storiesContainer.appendChild(clone);
+            }
+        }
+    }
+
+    addStories();
+
     async function sendRequest(addButton) {
-        fetch("http://161.97.214.82/send-request", {
+        fetch("http://161.97.214.82:"+port+"/send-request", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -126,7 +224,7 @@
 
         clone.querySelector(".mutual-friends").textContent = (parseInt(friendInfo.mutuals) + Math.round(Math.random() * 2)).toString() + " mutual friends"
 
-        const friendUserData = await fetchData("http://161.97.214.82/get-user-data?user="+friendInfo.username);
+        const friendUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+friendInfo.username);
         clone.querySelector(".friend-name").textContent = friendUserData.displayname;
         
         friendsContainer.appendChild(clone);
@@ -143,7 +241,7 @@
 
         clone.querySelector(".mutual-friends").textContent = (parseInt(friendInfo.mutuals) + Math.round(Math.random() * 2)).toString() + " mutual friends"
 
-        const friendUserData = await fetchData("http://161.97.214.82/get-user-data?user="+friendInfo.username);
+        const friendUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+friendInfo.username);
         clone.querySelector(".request-name").textContent = friendUserData.displayname;
         
         requestsContainer.appendChild(clone);
@@ -151,16 +249,16 @@
     }
 
     async function addFriendRecs() {
-        const allUsers = await fetchData("http://161.97.214.82/get-all-users");
+        const allUsers = await fetchData("http://161.97.214.82:"+port+"/get-all-users");
         const myUserData = await getMyUserData();
         for(user of allUsers) {
-            const theirUserData = await fetchData("http://161.97.214.82/get-user-data?user="+user)
+            const theirUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+user)
             if(user != username && !myUserData.friends.includes(user) && !theirUserData.requests.includes(username)) {
-                const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+user);
+                const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+user);
                 const pfpFilename = await pfpFilenameObject.text();
-                const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+                const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
 
-                const mutualData = await fetch("http://161.97.214.82/get-mutuals?user1=" + user + "&user2=" + username);
+                const mutualData = await fetch("http://161.97.214.82:"+port+"/get-mutuals?user1=" + user + "&user2=" + username);
                 const mutualText = await mutualData.text()
 
                 addFriendElement({"pfp":pfpPath,"username":user, "mutuals":mutualText});
@@ -174,11 +272,11 @@
             document.getElementById("requests-header").style.fontSize = "15px";
         }
         for(request of myUserData.requests) {
-            const theirUserData = await fetchData("http://161.97.214.82/get-user-data?user="+request)
-            const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+request);
+            const theirUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+request)
+            const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+request);
             const pfpFilename = await pfpFilenameObject.text();
-            const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
-            const mutualData = await fetch("http://161.97.214.82/get-mutuals?user1=" + request + "&user2=" + username);
+            const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+            const mutualData = await fetch("http://161.97.214.82:"+port+"/get-mutuals?user1=" + request + "&user2=" + username);
             const mutualText = await mutualData.text()
 
             addRequestElement({"pfp":pfpPath,"username":request, "mutuals":mutualText});
@@ -186,7 +284,7 @@
     }
 
     async function acceptRequest(button) {
-        fetch("http://161.97.214.82/accept-request", {
+        fetch("http://161.97.214.82:"+port+"/accept-request", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -198,6 +296,7 @@
         });
         button.parentElement.remove()
     }
+
     addFriendRecs();
     addFriendRequests();
 </script>

@@ -20,13 +20,15 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     async function sendUserData() {
         const data = {
             username: document.getElementById("username").value.toLowerCase(),
             password: document.getElementById("password").value
         }
 
-        const res = await fetch("http://161.97.214.82/auth", {
+        const res = await fetch("http://161.97.214.82:"+port+"/auth", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

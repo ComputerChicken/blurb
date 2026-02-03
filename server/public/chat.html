@@ -21,7 +21,7 @@
 
     <div id="user-bar">
         <img id="user-pfp">
-        <p id="chatter-name" onclick="showProfile()"></p>
+        <p id="chatter-name"></p>
     </div>
 
     <img id="back" src="back.png" onclick="window.location='index.html'">
@@ -32,6 +32,8 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     async function fetchData(url) {
         try {
             const response = await fetch(url);
@@ -49,7 +51,7 @@
     }
 
     async function getMyUserData() {
-        return await fetchData("http://161.97.214.82/get-user-data?user="+username);
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+username);
     }
 
     messageBoxPlaceholders = [
@@ -135,7 +137,7 @@
 
             chats.appendChild(document.createElement("br"));
         } else {
-            const chatterUserData = await fetchData("http://161.97.214.82/get-user-data?user="+message.user);
+            const chatterUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+message.user);
 
             const clone = chatTemplate.content.cloneNode(true);
 
@@ -164,7 +166,7 @@
         document.getElementById("message-box").value = "";
         document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
 
-        fetch("http://161.97.214.82/send-message", {
+        fetch("http://161.97.214.82:"+port+"/send-message", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -181,7 +183,7 @@
 
     async function pollChat() {
         var interval = setInterval(async () => {
-            const data = await fetchData("http://161.97.214.82/get-chat-data?chatid="+currentChat);
+            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat);
 
             const diff = data.contents.length - currentChatData.contents.length
             currentChatData = data;
@@ -198,13 +200,13 @@
     async function init() {
         document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
 
-        const data = await fetchData("http://161.97.214.82/get-chat-data?chatid="+currentChat);
+        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat);
 
         currentChatData = data;
 
-        const pfpFilenameObject = await fetch("http://161.97.214.82/get-pfp-path?username="+otherUser);
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+otherUser);
         const pfpFilename = await pfpFilenameObject.text();
-        const pfpPath = "http://161.97.214.82/pfps/" + pfpFilename;
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
 
         document.getElementById("user-pfp").src = pfpPath
 

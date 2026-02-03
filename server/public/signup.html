@@ -36,6 +36,8 @@
     </div>
 </body>
 <script>
+    const port = 80;
+
     async function sendUserData() {
         if(document.getElementById("password").value != document.getElementById("confirm").value) {
             document.getElementById("error-text").textContent = "Passwords don't match!"
@@ -48,7 +50,7 @@
             rs: document.getElementById("rs-selector").value
         }
 
-        const res = await fetch("http://161.97.214.82/create-user", {
+        const res = await fetch("http://161.97.214.82:"+port+"/create-user", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -65,7 +67,7 @@
                 const formData = new FormData();
                 formData.append("username", document.getElementById("username").value.toLowerCase());
                 formData.append("file", fileList[0]);
-                const pfpRes = await fetch("http://161.97.214.82/pfp-upload", {
+                const pfpRes = await fetch("http://161.97.214.82:"+port+"/pfp-upload", {
                     method: 'POST',
                     body: formData
                 });
