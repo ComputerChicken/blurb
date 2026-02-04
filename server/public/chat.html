@@ -157,22 +157,24 @@
     }
 
     async function sendMessage() {
-        const data = {
-            username: username,
-            chatid: currentChat,
-            message: document.getElementById("message-box").value
-        }
+        if(document.getElementById("message-box").value.trim() != "") {
+            const data = {
+                username: username,
+                chatid: currentChat,
+                message: document.getElementById("message-box").value
+            }
 
-        document.getElementById("message-box").value = "";
-        document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
+            document.getElementById("message-box").value = "";
+            document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
 
-        fetch("http://161.97.214.82:"+port+"/send-message", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data),
-        });
+            fetch("http://161.97.214.82:"+port+"/send-message", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            });
+	}
     }
 
     document.getElementById("send").addEventListener("click", (e) => {
@@ -220,6 +222,13 @@
 
         pollChat();
     }
+
+    document.getElementById("message-box").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            sendMessage();
+        }
+    });
 
     init();
 </script>

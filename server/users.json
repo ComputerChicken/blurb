@@ -4,7 +4,7 @@
     "password": "password",
     "friends": [
       "darragh",
-      "testpfp"
+      "o2stair"
     ],
     "requests": [],
     "rs": "Single, looking for a relationship"
@@ -14,7 +14,7 @@
     "password": "password",
     "friends": [
       "lebron0",
-      "testpfp"
+      "o2stair"
     ],
     "requests": [],
     "rs": "idk man"
@@ -22,20 +22,14 @@
   "test": {
     "displayname": "Test",
     "password": "test",
-    "friends": [
-      "testpfp"
-    ],
+    "friends": [],
     "requests": [],
     "rs": "idfk it's a test account"
   },
   "testpfp": {
     "displayname": "Testpfp",
     "password": "testpfp",
-    "friends": [
-      "lebron0",
-      "darragh",
-      "test"
-    ],
+    "friends": [],
     "requests": [],
     "rs": "idfk it's a test account"
   },
@@ -45,5 +39,15 @@
     "friends": [],
     "requests": [],
     "rs": "Single, not looking for anything"
+  },
+  "o2stair": {
+    "displayname": "Halston Kueper",
+    "password": "GamerGuy1",
+    "friends": [
+      "lebron0",
+      "darragh"
+    ],
+    "requests": [],
+    "rs": "Single, looking for a relationship"
   }
 }
