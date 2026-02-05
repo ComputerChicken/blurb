@@ -42,7 +42,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = 6675;
+const PORT = 80;
 
 app.use(cors());
 
@@ -79,7 +79,8 @@ async function addChat(message) {
 
         const dataToAdd = {
             user: message.username,
-            chat: message.message
+            chat: message.message,
+            timestamp: Date.now()
         }
 
         jsonData.contents.push(dataToAdd);

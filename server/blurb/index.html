@@ -31,7 +31,7 @@
     </div>
 </body>
 <script>
-    const port = 6675;
+    const port = 80;
 
     function arraysEqual(a, b) {
         return a.length === b.length &&
@@ -106,11 +106,10 @@
         window.location = "chat.html?chatid=" + tile.id;
     }
 
-    async function addChat(chatid, isnew = false) {
-        const chatData = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+chatid+"&username=none");
-        var pfpUser = chatData.chatters[0];
+    async function addChat(chatObj) {
+        var pfpUser = chatObj.chatters[0];
         if(pfpUser == username) {
-            pfpUser = chatData.chatters[1];
+            pfpUser = chatObj.chatters[1];
         }
         const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+pfpUser);
         const pfpFilename = await pfpFilenameObject.text();
@@ -121,15 +120,25 @@
     async function addFriends() {
         tileContainer.innerHTML = "";
         const myUserData = await getMyUserData();
-        for(const chatid of myUserData.newchats) {
-            await addChat(chatid, true);
-        }
+        const userChats = [];
+        const userChatsIds = [];
+
         for(const friend of myUserData.friends) {
             const loopChatId = await fetchData("http://161.97.214.82:"+port+"/get-chat-id?users=" + username + "," + friend);
-            const elem = document.getElementById(loopChatId.toString());
-            if(!elem) {
-                await addChat(loopChatId);
+            const chatData = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+loopChatId+"&username=none");
+            chatData["id"] = loopChatId;
+            userChats.push(chatData);
+        }
+
+        userChats.sort((a, b) => a.timestamp - b.timestamp);
+
+        for(const chat of userChats) {
+            var tisNew = false;
+            if(myUserData.newchats.includes(chat.id)) {
+                tisNew = true;
             }
+            
+            await addChat(chatData, tisNew);
         }
     }
 
