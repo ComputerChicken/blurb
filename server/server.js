@@ -9,11 +9,40 @@ import chalk from "chalk";
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
+import admin from 'firebase-admin';
+import { json } from "node:stream/consumers";
+
+const serviceAccount = JSON.parse(
+    fs.readFileSync('./firebase-service-account.json', 'utf8')
+);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
+async function sendPushToToken(token, title, body) {
+    await admin.messaging().send({
+        token,
+        notification: {
+            title: title,
+            body: body
+        },
+        android: {
+            notification: {
+                channelId: "default", // Must match a channel created on the device
+                sound: "default",      // Default vibration + sound
+                defaultVibrateTimings: true,
+                defaultSound: true,
+            },
+        }
+    });
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = 80;
+const PORT = 6675;
 
 app.use(cors());
 
@@ -31,7 +60,22 @@ async function addChat(message) {
             return;
         }
 
+        const userData = fs.readFileSync("users.json", "utf8")
+
+        const userJsonData = JSON.parse(userData);
+
         const jsonData = JSON.parse(data);
+
+        const notifTo = jsonData.chatters;
+
+        for(const user of notifTo) {
+            if(user != message.username) {
+                console.log(userJsonData[user]);
+                console.log(userJsonData[user].fcm);
+                sendPushToToken(userJsonData[user].fcm, userJsonData[message.username].displayname.split(" ")[0] + " sent u something!", "Come check it out");
+                userJsonData[user].newchats.push(message.chatid);
+            }
+        }
 
         const dataToAdd = {
             user: message.username,
@@ -44,11 +88,15 @@ async function addChat(message) {
 
         fs.writeFile("chat"+message.chatid+".json", updatedJsonString, "utf8", (err, data) => {});
 
+        const updatedUserJsonString = JSON.stringify(userJsonData, null, 2);
+
+        fs.writeFile("users.json", updatedUserJsonString, "utf8", (err, data) => {});
+
         console.log(chalk.blue(chalk.bold('Data successfully added to the JSON file!')));
     });
 }
 
-function createUser(username, password, displayname, rs) {
+function createUser(username, password, displayname, rs, fcm) {
     const data = fs.readFileSync("users.json", "utf8")
 
     const jsonData = JSON.parse(data);
@@ -58,8 +106,12 @@ function createUser(username, password, displayname, rs) {
         password: password,
         friends: [],
         requests: [],
-        rs: rs
+        rs: rs,
+        fcm: fcm,
+        newchats: []
     };
+
+    console.log(dataToAdd)
 
     if(Object.keys(jsonData).includes(username)) {
         return "Username already in use!";
@@ -243,7 +295,7 @@ app.post("/accept-request", (req, res) => {
 app.post("/create-user", async (req, res) => {
     const userData = req.body;
     console.log("Create user request " + chalk.blue(chalk.bold(JSON.stringify(userData))));
-    const returnText = createUser(userData.username, userData.password, userData.displayname, userData.rs);
+    const returnText = createUser(userData.username, userData.password, userData.displayname, userData.rs, userData.fcm);
     res.send(
         returnText
     );
@@ -403,7 +455,22 @@ app.get("/get-user-data", (req, res) => {
 // GET endpoint
 app.get("/get-chat-data", (req, res) => {
     // Incoming info from query params
-    const { chatid } = req.query;
+    const { chatid, username } = req.query;
+    if(username != "none" && username) {
+        const userData = fs.readFileSync("users.json", "utf8");
+
+        const userJsonData = JSON.parse(userData);
+
+        const newchatId = userJsonData[username].newchats.indexOf(chatid.toString())
+
+        if(newchatId >= 0) {
+            userJsonData[username].newchats.splice(newchatId,1);
+        }
+
+        const updatedUserJsonString = JSON.stringify(userJsonData, null, 2);
+
+        fs.writeFile("users.json", updatedUserJsonString, "utf8", (err, data) => {});
+    }
 
     console.log("Resquest to get chat contents with id " + chalk.green(chalk.bold(chatid)));
 

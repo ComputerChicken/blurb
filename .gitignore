@@ -1,2 +1,3 @@
 /server/uploads/*
 /server/chat*
+/server/users.json

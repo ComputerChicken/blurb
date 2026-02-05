@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends | Blurb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+</head>
+<body id="body">
+    <template id="story-template">
+        <div class="story">
+            <p class="story-header">Lebron James</p>
+            <div class="friend-story-container"></div>
+        </div>    
+    </template>
+
+    <template id="friend-template">
+        <div class="friend">
+            <div class="friend-info-wrapper">
+                <img class="friend-pfp">
+                <div class="friend-name">Lebron</div>
+            </div>
+            <div class="mutual-friends">10</div>
+            <button class="add-button" onclick="sendRequest(this)">Add +</button>
+        </div>
+    </template>
+
+    <template id="request-template">
+        <div class="request">
+            <div class="request-info-wrapper">
+                <img class="request-pfp">
+                <div class="request-name">Lebron</div>
+            </div>
+            <div class="mutual-friends">10</div>
+            <button class="add-button" onclick="acceptRequest(this)">Accept</button>
+        </div>
+    </template>
+
+    <div id="friends-header">
+        <div id="story-select" onclick="showPeople()" class="selected-header-item" style="width:100%;">
+            <div class="stupid-div">
+                Stories
+            </div>
+        </div>
+        <div id="people-select" onclick="showFriends()" style="width:100%;">
+            <div class="stupid-div">
+                People
+            </div>
+        </div>
+    </div>
+
+    <div id="friends-bg"></div>
+
+    <div id="friends-wrapper">
+        <div style="height:10vh; width:100vw;"></div>
+        <div id="requests-container">
+            <p id="requests-header">Requests</p>
+        </div>
+        <div id="friends-container">
+            <p id="people-you-might-know">People you might know</p>
+        </div>
+    </div>
+
+    <div id="stories-container"></div>
+
+    <div id="the-bar">
+        <div class="bar-image-wrapper" onclick="window.location='profile.html'" id="profile-button">
+            <img class="bar-image" id="user-img">
+        </div>
+        <div class="bar-image-wrapper" id="home" onclick="window.location='index.html'">
+            <img class="bar-image" src="home.png">
+        </div>
+        <div class="bar-image-wrapper">
+            <img class="bar-image" src="friends.png">
+        </div>
+    </div>
+</body>
+<script>
+    const port = 6675;
+
+    function arraysEqual(a, b) {
+        return a.length === b.length &&
+            a.every((val, i) => val === b[i])
+    }
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    async function getMyUserData() {
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+username);
+    }
+
+    const friendTemplate = document.getElementById("friend-template");
+    const friendsContainer = document.getElementById("friends-container");
+
+    const requestTemplate = document.getElementById("request-template");
+    const requestsContainer = document.getElementById("requests-container");
+
+    const storyTemplate = document.getElementById("story-template");
+    const storiesContainer = document.getElementById("stories-container");
+
+    var username = localStorage["loggedUsername"];
+
+    if(!username) {
+        window.location = "signup.html"
+    }
+
+    async function setUserPfp() {
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+username);
+        const pfpFilename = await pfpFilenameObject.text();
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+        document.getElementById("user-img").src = pfpPath;
+    }
+
+    setUserPfp();
+
+    function showFriends() {
+        document.getElementById("friends-wrapper").style.visibility = "visible";
+        document.getElementById("stories-container").style.visibility = "hidden";
+        document.getElementById("people-select").className = "selected-header-item";
+        document.getElementById("story-select").className = "";
+    }
+
+    function showPeople() {
+        document.getElementById("friends-wrapper").style.visibility = "hidden";
+        document.getElementById("stories-container").style.visibility = "visible";
+        document.getElementById("people-select").className = "";
+        document.getElementById("story-select").className = "selected-header-item";
+    }
+
+    async function addStories() {
+        const myUserData = await getMyUserData();
+
+        for(lUsername of myUserData.friends) {
+            const clone = storyTemplate.content.cloneNode(true);
+            
+            console.log(lUsername)
+            const storyPathObj = await fetch("http://161.97.214.82:"+port+"/get-story-path?username="+lUsername);
+            const storyFilename = await storyPathObj.text();
+            const storyPath = "http://161.97.214.82:"+port+"/uploads/"+storyFilename;
+
+            const lUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+lUsername);
+            
+            console.log(lUserData.displayname);
+            clone.querySelector(".story-header").textContent = lUserData.displayname;
+
+            if(storyFilename != "none") {
+                const imgExts = ["jpg","jpeg","png","gif","webp","svg","avif","apng","ico"]
+                if(storyFilename.endsWith("txt")) {
+                    const textStoryObj = await fetch(storyPath);
+                    const textStory = await textStoryObj.text();
+                    clone.querySelector(".friend-story-container").style.overflow = "scroll";
+                    clone.querySelector(".friend-story-container").textContent = textStory;
+                } else {
+                    var isImg = false;
+                    for(const ext of imgExts) {
+                        if(storyFilename.endsWith(ext)) {
+                            isImg = true;
+                            break;
+                        }
+                    }
+                    if(isImg) {
+                        const imgElem = document.createElement("img");
+                        imgElem.src = storyPath;
+                        imgElem.className = "story-image";
+                        clone.querySelector(".friend-story-container").appendChild(imgElem);
+                    } else {
+                        const vidElem = document.createElement("video");
+                        vidElem.src = storyPath;
+                        vidElem.autoplay = true;
+                        vidElem.loop = true;
+                        vidElem.muted = true;
+                        vidElem.playsInline = true;
+                        vidElem.controls = false;
+                        vidElem.addEventListener('click', () => {
+                            vidElem.muted = !vidElem.muted;
+                        });
+                        clone.querySelector(".friend-story-container").appendChild(vidElem);
+                    }
+                }
+                storiesContainer.appendChild(clone);
+            }
+        }
+    }
+
+    addStories();
+
+    async function sendRequest(addButton) {
+        fetch("http://161.97.214.82:"+port+"/send-request", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                requester: username,
+                target: addButton.parentElement.id.replace("friendrec-","")
+            })
+        });
+        addButton.onclick = function(){}
+        addButton.textContent = "Sent!"
+    }
+
+    async function addFriendElement(friendInfo) {
+        const clone = friendTemplate.content.cloneNode(true);
+        
+        clone.querySelector(".friend-pfp").src = friendInfo.pfp;
+        clone.querySelector(".friend").id = "friendrec-" + friendInfo.username;
+
+        clone.querySelector(".friend").visibility = "visible"
+
+        clone.querySelector(".mutual-friends").textContent = (parseInt(friendInfo.mutuals) + Math.round(Math.random() * 2)).toString() + " mutual friends"
+
+        const friendUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+friendInfo.username);
+        clone.querySelector(".friend-name").textContent = friendUserData.displayname;
+        
+        friendsContainer.appendChild(clone);
+    }
+
+    async function addRequestElement(friendInfo) {
+        console.log(friendInfo)
+        const clone = requestTemplate.content.cloneNode(true);
+        
+        clone.querySelector(".request-pfp").src = friendInfo.pfp;
+        clone.querySelector(".request").id = "friendreq-" + friendInfo.username;
+
+        clone.querySelector(".request").visibility = "visible"
+
+        clone.querySelector(".mutual-friends").textContent = (parseInt(friendInfo.mutuals) + Math.round(Math.random() * 2)).toString() + " mutual friends"
+
+        const friendUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+friendInfo.username);
+        clone.querySelector(".request-name").textContent = friendUserData.displayname;
+        
+        requestsContainer.appendChild(clone);
+        console.log(requestsContainer)
+    }
+
+    async function addFriendRecs() {
+        const allUsers = await fetchData("http://161.97.214.82:"+port+"/get-all-users");
+        const myUserData = await getMyUserData();
+        for(user of allUsers) {
+            const theirUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+user)
+            if(user != username && !myUserData.friends.includes(user) && !theirUserData.requests.includes(username)) {
+                const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+user);
+                const pfpFilename = await pfpFilenameObject.text();
+                const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+
+                const mutualData = await fetch("http://161.97.214.82:"+port+"/get-mutuals?user1=" + user + "&user2=" + username);
+                const mutualText = await mutualData.text()
+
+                addFriendElement({"pfp":pfpPath,"username":user, "mutuals":mutualText});
+            }
+        }
+    }
+
+    async function addFriendRequests() {
+        const myUserData = await getMyUserData();
+        if(myUserData.requests.length != 0) {
+            document.getElementById("requests-header").style.fontSize = "15px";
+        }
+        for(request of myUserData.requests) {
+            const theirUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+request)
+            const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+request);
+            const pfpFilename = await pfpFilenameObject.text();
+            const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+            const mutualData = await fetch("http://161.97.214.82:"+port+"/get-mutuals?user1=" + request + "&user2=" + username);
+            const mutualText = await mutualData.text()
+
+            addRequestElement({"pfp":pfpPath,"username":request, "mutuals":mutualText});
+        }
+    }
+
+    async function acceptRequest(button) {
+        fetch("http://161.97.214.82:"+port+"/accept-request", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                requester: button.parentElement.id.replace("friendreq-",""),
+                target: username
+            })
+        });
+        button.parentElement.remove()
+    }
+
+    addFriendRecs();
+    addFriendRequests();
+</script>
+</html>

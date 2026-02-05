@@ -1,9 +1,9 @@
 {
-  "appId": "com.darraghbennett",
+  "appId": "com.darraghbennett.blurb",
   "appName": "Blurb",
   "webDir": "dist",
   "server": {
-    "url": "http://161.97.214.82",
+    "url": "http://161.97.214.82:34621",
     "cleartext": true
   }
 }

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | Blurb</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+</head>
+<body id="body">
+    <template id="chat-template">
+        <div class="chat">
+            <div class="chat-header">Me</div>
+            <div class="chat-contents">Hello</div>
+        </div>
+    </template>
+
+    <div id="chat-bg"></div>
+
+    <div id="chats"></div>
+
+    <div id="user-bar">
+        <img id="user-pfp">
+        <p id="chatter-name"></p>
+    </div>
+
+    <img id="back" src="back.png" onclick="window.location='index.html'">
+
+    <div id="bar-content-message">
+        <input id="message-box">
+        <img src="send.png" id="send">
+    </div>
+</body>
+<script type="module">
+    const port = 6675;
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    async function getMyUserData() {
+        return await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+username);
+    }
+
+    const messageBoxPlaceholders = [
+        "Watcha thinking?",
+        "Go ahead...",
+        "Say something",
+        "They're waiting...",
+        "Type here bro",
+        "Wsp",
+        "Just do it",
+        "Don’t overthink it…",
+        "Say something smart 🤓",
+        "Words, please…",
+        "I don't got all day",
+        "Ball's in your court",
+        "Your move",
+        "Don't be shy",
+        "Hit me with it",
+        "Lock tf in",
+        "Write a banger",
+        "Think before you send",
+        "Are you sure?",
+        "Don't say something stupid",
+        "You better not be driving rn",
+        "Don't drunk text lol",
+        "Got memes?",
+        "Start typing",
+        "Do the thing... the typing thing...",
+        "Confess ur love",
+        "Send neutrality",
+        "I believe in you",
+        "Pretend that you like them",
+        "I’m judging your typing speed.",
+        "K. whatever",
+        "Send random nouns.",
+        "Politics are cooked 😭✌️",
+        "I’ll judge silently.",
+        "Your mom would be proud.",
+        "Wsg gnggg",
+        "why am i writing these",
+        "pretty please type...",
+        "R u bored?",
+        "Say hi!",
+        "Good luck man",
+        "yikes",
+        "Reconsider",
+        "Overthink it",
+        "This is ur chance",
+        "v i b e s",
+        "Uhm... bad idea!",
+        "lmao",
+        "lolll",
+        "gay 🫵",
+        "Nice haircut",
+        "They missed u"
+    ];
+
+    const chatTemplate = document.getElementById("chat-template");
+    const chats = document.getElementById("chats");
+
+    var username = localStorage["loggedUsername"];
+
+    if(!username) {
+        window.location = "signup.html"
+    }
+
+    var url = new URL(window.location.href);
+    var currentChat = url.searchParams.get("chatid");
+    var currentChatData = [];
+
+    async function addChat(message) {
+        if(message.user == username) {
+            const clone = chatTemplate.content.cloneNode(true);
+
+            clone.querySelector(".chat-header").textContent = "Me";
+            clone.querySelector(".chat-header").style.color = "#f00";
+
+            clone.querySelector(".chat-contents").textContent = message.chat;
+        
+            chats.appendChild(clone);
+
+            chats.appendChild(document.createElement("br"));
+        } else {
+            const chatterUserData = await fetchData("http://161.97.214.82:"+port+"/get-user-data?user="+message.user);
+
+            const clone = chatTemplate.content.cloneNode(true);
+
+            clone.querySelector(".chat-header").textContent = chatterUserData.displayname;
+            clone.querySelector(".chat-header").style.color = "#55f";
+
+            clone.querySelector(".chat-contents").textContent = message.chat;
+        
+            chats.appendChild(clone);
+
+            chats.appendChild(document.createElement("br"));
+        }
+        chats.scrollTo({
+            top: chats.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
+    async function sendMessage() {
+        if(document.getElementById("message-box").value.trim() != "") {
+            const data = {
+                username: username,
+                chatid: currentChat,
+                message: document.getElementById("message-box").value
+            }
+
+            document.getElementById("message-box").value = "";
+            document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
+
+            fetch("http://161.97.214.82:"+port+"/send-message", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            });
+	}
+    }
+
+    document.getElementById("send").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        sendMessage();
+    });
+
+    async function pollChat() {
+        var interval = setInterval(async () => {
+            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username);
+
+            const diff = data.contents.length - currentChatData.contents.length
+            currentChatData = data;
+            if(diff != 0) {
+                for(const message of data.contents.slice(-diff)) {
+                    await addChat(message);
+                }
+            }
+
+            console.log("updated chat")
+        }, 500)
+    }
+
+    async function init() {
+        document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
+
+        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username);
+
+        currentChatData = data;
+
+        var otherUser = data.chatters[0];
+        if(otherUser == username) {
+            otherUser = data.chatters[1];
+        }
+
+        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+otherUser);
+        const pfpFilename = await pfpFilenameObject.text();
+        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+
+        document.getElementById("user-pfp").src = pfpPath
+
+        document.getElementById("user-bar").onclick = function(){window.location='profile.html?username=' + otherUser}
+
+        document.getElementById("chatter-name").textContent = data.name[username];
+
+        for(const message of data.contents) {
+            await addChat(message);
+        }
+
+        pollChat();
+    }
+
+    document.getElementById("message-box").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            sendMessage();
+        }
+    });
+
+    init();
+</script>
+</html>

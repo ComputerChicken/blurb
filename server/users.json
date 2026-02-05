@@ -1,53 +1,24 @@
 {
-  "lebron0": {
-    "displayname": "Lebron James",
-    "password": "password",
+  "mom": {
+    "displayname": "Mom Bennett",
+    "password": "mom",
     "friends": [
-      "darragh",
-      "o2stair"
-    ],
-    "requests": [],
-    "rs": "Single, looking for a relationship"
-  },
-  "darragh": {
-    "displayname": "Darragh B",
-    "password": "password",
-    "friends": [
-      "lebron0",
-      "o2stair"
-    ],
-    "requests": [],
-    "rs": "idk man"
-  },
-  "test": {
-    "displayname": "Test",
-    "password": "test",
-    "friends": [],
-    "requests": [],
-    "rs": "idfk it's a test account"
-  },
-  "testpfp": {
-    "displayname": "Testpfp",
-    "password": "testpfp",
-    "friends": [],
-    "requests": [],
-    "rs": "idfk it's a test account"
-  },
-  "testrs": {
-    "displayname": "Testrs",
-    "password": "testrs",
-    "friends": [],
-    "requests": [],
-    "rs": "Single, not looking for anything"
-  },
-  "o2stair": {
-    "displayname": "Halston Kueper",
-    "password": "GamerGuy1",
-    "friends": [
-      "lebron0",
       "darragh"
     ],
     "requests": [],
-    "rs": "Single, looking for a relationship"
+    "rs": "Unkown",
+    "fcm": "dULhUm32TA27M1OfBN08Ku:APA91bEdYjbrDfZQZx7eqq2XSVGBsHGe7KHgFVlUNnI9LS0LFkvz0CH-HWgTgikV2a9Uk5CO62BomXVrhRMYK7xByRDhWezCs5VcH-_8QOUWg8kK3wpidFU",
+    "newchats": []
+  },
+  "darragh": {
+    "displayname": "Darragh Bennett",
+    "password": "password",
+    "friends": [
+      "mom"
+    ],
+    "requests": [],
+    "rs": "Unkown",
+    "fcm": "ecV0mDfaQCihTUuE6ptN1L:APA91bEH2oWVeXXvLL6pPzbzRDAyZjL7-FoyFmj0AwlWPBygzS-mlSemHlRkBa8E4t83LXy_N_B47PrUCkZ4qHflm4tS-Z5QOdKA8Lqh3TAyNufCHfWVwOc",
+    "newchats": []
   }
 }

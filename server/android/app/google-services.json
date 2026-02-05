@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "291134410538",
+    "project_id": "blurb-app",
+    "storage_bucket": "blurb-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:291134410538:android:928e630290a0fe47a0d853",
+        "android_client_info": {
+          "package_name": "com.darraghbennett.blurb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUOGsFQbe2Pa2y8iK5w8zGhC2JyjbOxC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
