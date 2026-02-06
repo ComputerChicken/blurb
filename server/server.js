@@ -197,7 +197,7 @@ function acceptRequest(requester, target) {
             requester
         ],
         contents: [],
-        timestamp: 8640000000000000
+        timestamp: Date.now()
     }), "utf8");
 
     console.log(chalk.blue(chalk.bold('Data successfully added to the JSON file!')));
