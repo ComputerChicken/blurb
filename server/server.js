@@ -26,10 +26,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-admin.auth().listUsers(1)
-  .then(() => console.log("Firebase auth OK"))
-  .catch(err => console.error(err));
-
 async function sendPushToToken(token, title, body) {
     await admin.messaging().send({
         token,
