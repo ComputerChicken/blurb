@@ -130,7 +130,7 @@
             userChats.push(chatData);
         }
 
-        userChats.sort((a, b) => a.timestamp - b.timestamp);
+        userChats.sort((a, b) => b.timestamp - a.timestamp);
 
         for(const chat of userChats) {
             var tisNew = false;

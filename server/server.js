@@ -85,11 +85,12 @@ async function addChat(message) {
 
         const dataToAdd = {
             user: message.username,
-            chat: message.message,
-            timestamp: Date.now()
+            chat: message.message
         }
 
         jsonData.contents.push(dataToAdd);
+
+        jsonData.timestamp = Date.now();
 
         const updatedJsonString = JSON.stringify(jsonData, null, 2);
 
@@ -195,7 +196,8 @@ function acceptRequest(requester, target) {
             target,
             requester
         ],
-        contents: []
+        contents: [],
+        timestamp: 8640000000000000
     }), "utf8");
 
     console.log(chalk.blue(chalk.bold('Data successfully added to the JSON file!')));
