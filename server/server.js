@@ -10,15 +10,25 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
 import admin from 'firebase-admin';
-import { json } from "node:stream/consumers";
 
-const serviceAccount = JSON.parse(
-    fs.readFileSync('./firebase-service-account.json', 'utf8')
+const raw = fs.readFileSync(
+  new URL('./firebase-service-account.json', import.meta.url),
+  'utf8'
 );
 
+const serviceAccount = JSON.parse(raw);
+
+if (!serviceAccount.private_key.includes('BEGIN PRIVATE KEY')) {
+  throw new Error('Private key malformed');
+}
+
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount),
 });
+
+admin.auth().listUsers(1)
+  .then(() => console.log("Firebase auth OK"))
+  .catch(err => console.error(err));
 
 async function sendPushToToken(token, title, body) {
     await admin.messaging().send({
