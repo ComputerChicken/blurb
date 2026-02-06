@@ -609,3 +609,10 @@ video {
     object-fit: cover;
     border-radius: 20px;
 }
+
+#log-out {
+    margin-left: 50%;
+    transform: translate(-50%, 0);
+    margin-top: 50px;
+    background-color: #f55;
+}

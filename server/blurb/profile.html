@@ -167,6 +167,12 @@
             elemToAdd.id = "edit-story";
             elemToAdd.onclick = function() {window.location="createstory.html"}
             document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
+
+            elemToAdd = document.createElement("button");
+            elemToAdd.textContent = "Log Out";
+            elemToAdd.id = "log-out";
+            elemToAdd.onclick = function() {localStorage.removeItem("loggedUsername"); window.location="signup.html"}
+            document.getElementById("profile-info-wrapper").appendChild(elemToAdd);
         }
     }
 

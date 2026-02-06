@@ -41,7 +41,12 @@
     import { PushNotifications } from '@capacitor/push-notifications'
 
     async function sendUserData() {
-        const permStatus = await PushNotifications.requestPermissions();
+        var permStatus;
+        try {
+            permStatus = await PushNotifications.requestPermissions();
+        } catch {
+            permStatus = "denied";
+        }
 
         if (permStatus.receive !== 'granted') {
             const data = {
