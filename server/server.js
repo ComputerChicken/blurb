@@ -489,7 +489,7 @@ app.get("/get-chat-data", (req, res) => {
 
         onlineSet.add(username);
 
-        chatDataJson.onlineSet = Array.from(onlineSet);
+        chatDataJson.online = Array.from(onlineSet);
 
         if(typing == "t") {
             const typingSet = new Set(chatDataJson.typing)

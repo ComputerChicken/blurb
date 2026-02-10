@@ -195,7 +195,17 @@
 
     async function pollChat() {
         var interval = setInterval(async () => {
-            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&typing=f&username="+username);
+            var isTyping = "f";
+
+            if(document.getElementById("message-box").value.trim()) {
+                isTyping = "t";
+            }
+
+            console.log(isTyping)
+            
+            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&typing="+isTyping+"&username="+username);
+
+            console.log(data)
 
             for(const online of data.online) {
                 document.getElementById(online).textContent = "Online";
@@ -218,13 +228,7 @@
     async function init() {
         document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
 
-        var isTyping = "f";
-
-        if(document.getElementById("message-box").value.trim()) {
-            isTyping = "t";
-        }
-
-        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username+"&typing="+isTyping);
+        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username+"&typing=f");
 
         currentChatData = data;
 
