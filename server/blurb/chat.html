@@ -33,7 +33,7 @@
         <p id="chatter-name"></p>
     </div>
 
-    <img id="back" src="back.png" onclick="window.location='index.html'">
+    <img id="back" src="back.png" onclick="back()">
 
     <div id="bar-content-message">
         <input id="message-box">
@@ -200,17 +200,18 @@
             if(document.getElementById("message-box").value.trim()) {
                 isTyping = "t";
             }
-
-            console.log(isTyping)
             
             const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&typing="+isTyping+"&username="+username);
 
             console.log(data)
 
             for(const online of data.online) {
-                document.getElementById(online).textContent = "Online";
-                if(data.typing.includes(online)) {
-                    document.getElementById(online).textContent = "Typing";
+                if(online != username) {
+                    console.log(online);
+                    document.getElementById(online).textContent = "Online";
+                    if(data.typing.includes(online)) {
+                        document.getElementById(online).textContent = "Typing";
+                    }
                 }
             }
             const diff = data.contents.length - currentChatData.contents.length
@@ -278,5 +279,10 @@
     });
 
     init();
+
+    async function back() {
+        await fetch("http://161.97.214.82:"+port+"/unonline?username="+chatter+"&chatid="+currentChat);
+        window.location='index.html'
+    }
 </script>
 </html>

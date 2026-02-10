@@ -497,6 +497,14 @@ app.get("/get-chat-data", (req, res) => {
             typingSet.add(username);
 
             chatDataJson.typing = Array.from(typingSet);
+        } else {
+            const typingSet = new Set(chatDataJson.typing);
+
+            if(data.typing.includes(username)) {
+                typingSet.delete(username);
+            }
+
+            chatDataJson.typing = Array.from(typingSet);
         }
 
         const newChatData = JSON.stringify(chatDataJson, null, 2)
@@ -519,6 +527,31 @@ app.get("/get-chat-data", (req, res) => {
         const data = JSON.parse(jsonData);
         res.json(data);
     });
+});
+
+// GET endpoint
+app.get("/unonline", (req, res) => {
+    const { chatid, username } = req.query;
+    const chatData = fs.readFileSync(`chat${chatid}.json`, "utf8");
+    const chatDataJson = JSON.parse(chatData);
+
+    if(data.online.includes(username)) {
+        const onlineSet = new Set(chatDataJson.online);
+        onlineSet.delete(username);
+        chatDataJson.online = Array.from(onlineSet);
+    }
+
+    if(data.typing.includes(username)) {
+        const typingSet = new Set(chatDataJson.typing);
+        typingSet.delete(username);
+        chatDataJson.typing = Array.from(typingSet);
+    }
+
+    const newChatData = JSON.stringify(chatDataJson, null, 2)
+
+    if(chatData != newChatData) {
+        fs.writeFile(`chat${chatid}.json`, newChatData, "utf8", (err, data) => {});
+    }
 });
 
 // GET endpoint
