@@ -498,8 +498,13 @@ app.get("/get-chat-data", (req, res) => {
 
             chatDataJson.typing = Array.from(typingSet);
         } else {
-            console.log(chatData);
-            console.log(chatData.typing)
+            const typingSet = new Set(chatDataJson.typing);
+
+            if(chatDataJson.typing.includes(username)) {
+                typingSet.delete(username);
+            }
+
+            chatDataJson.typing = Array.from(typingSet);
         }
 
         const newChatData = JSON.stringify(chatDataJson, null, 2)
@@ -530,13 +535,13 @@ app.get("/unonline", (req, res) => {
     const chatData = fs.readFileSync(`chat${chatid}.json`, "utf8");
     const chatDataJson = JSON.parse(chatData);
 
-    if(chatData.online.includes(username)) {
+    if(chatDataJson.online.includes(username)) {
         const onlineSet = new Set(chatDataJson.online);
         onlineSet.delete(username);
         chatDataJson.online = Array.from(onlineSet);
     }
 
-    if(chatData.typing.includes(username)) {
+    if(chatDataJson.typing.includes(username)) {
         const typingSet = new Set(chatDataJson.typing);
         typingSet.delete(username);
         chatDataJson.typing = Array.from(typingSet);
