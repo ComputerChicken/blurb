@@ -498,7 +498,8 @@ app.get("/get-chat-data", (req, res) => {
 
             chatDataJson.typing = Array.from(typingSet);
         } else {
-            console.log(chatData)
+            console.log(chatData);
+            console.log(chatData.typing)
         }
 
         const newChatData = JSON.stringify(chatDataJson, null, 2)
