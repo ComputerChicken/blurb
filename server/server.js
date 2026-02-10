@@ -379,9 +379,11 @@ app.get("/get-pfp-path", (req, res) => {
             return;
         }
         for(const file of files) {
-            if(file.split(".")[0] == username) {
-                res.send(file);
-                sent = true;
+            if(!sent) {
+                if(file.split(".")[0] == username) {
+                    sent = true;
+                    res.send(file);
+                }
             }
         };
         if(!sent) {
