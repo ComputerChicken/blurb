@@ -292,5 +292,10 @@
     }
 
     window.back = back;
+
+    window.addEventListener('beforeunload', async (event) => {
+        event.preventDefault();
+        await fetch("http://161.97.214.82:"+port+"/unonline?username="+username+"&chatid="+currentChat);
+    });
 </script>
 </html>
