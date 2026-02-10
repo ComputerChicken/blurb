@@ -197,7 +197,9 @@ function acceptRequest(requester, target) {
             requester
         ],
         contents: [],
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        typing: [],
+        online: []
     }), "utf8");
 
     console.log(chalk.blue(chalk.bold('Data successfully added to the JSON file!')));
@@ -464,7 +466,7 @@ app.get("/get-user-data", (req, res) => {
 // GET endpoint
 app.get("/get-chat-data", (req, res) => {
     // Incoming info from query params
-    const { chatid, username } = req.query;
+    const { chatid, username, typing } = req.query;
     if(username != "none" && username) {
         const userData = fs.readFileSync("users.json", "utf8");
 
@@ -479,6 +481,29 @@ app.get("/get-chat-data", (req, res) => {
         const updatedUserJsonString = JSON.stringify(userJsonData, null, 2);
 
         fs.writeFile("users.json", updatedUserJsonString, "utf8", (err, data) => {});
+
+        const chatData = fs.readFileSync(`chat${chatid}.json`, "utf8");
+        const chatDataJson = JSON.parse(chatData);
+
+        const onlineSet = new Set(chatDataJson.online)
+
+        onlineSet.add(username);
+
+        chatDataJson.onlineSet = Array.from(onlineSet);
+
+        if(typing == "t") {
+            const typingSet = new Set(chatDataJson.typing)
+
+            typingSet.add(username);
+
+            chatDataJson.typing = Array.from(typingSet);
+        }
+
+        const newChatData = JSON.stringify(userJsonData, null, 2)
+
+        if(chatData != newChatData) {
+            fs.writeFile(`chat${chatid}.json`, newChatData, "utf8", (err, data) => {});
+        }
     }
 
     console.log("Resquest to get chat contents with id " + chalk.green(chalk.bold(chatid)));

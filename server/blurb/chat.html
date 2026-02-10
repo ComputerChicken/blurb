@@ -15,9 +15,18 @@
         </div>
     </template>
 
+    <template id="status-template">
+        <div class="status">
+            <img class="status-image">
+            <p class="status-typing"></p>
+        </div>
+    </template>
+
     <div id="chat-bg"></div>
 
     <div id="chats"></div>
+
+    <div id="status-container"></div>
 
     <div id="user-bar">
         <img id="user-pfp">
@@ -112,6 +121,9 @@
     const chatTemplate = document.getElementById("chat-template");
     const chats = document.getElementById("chats");
 
+    const statusTemplate = document.getElementById("status-template");
+    const statusContainer = document.getElementById("status-container");
+
     var username = localStorage["loggedUsername"];
 
     if(!username) {
@@ -183,8 +195,14 @@
 
     async function pollChat() {
         var interval = setInterval(async () => {
-            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username);
+            const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&typing=f&username="+username);
 
+            for(const online of data.online) {
+                document.getElementById(online).textContent = "Online";
+                if(data.typing.includes(online)) {
+                    document.getElementById(online).textContent = "Typing";
+                }
+            }
             const diff = data.contents.length - currentChatData.contents.length
             currentChatData = data;
             if(diff != 0) {
@@ -200,7 +218,13 @@
     async function init() {
         document.getElementById("message-box").placeholder = messageBoxPlaceholders[Math.round(Math.random()*(messageBoxPlaceholders.length-1))];
 
-        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username);
+        var isTyping = "f";
+
+        if(document.getElementById("message-box").value.trim()) {
+            isTyping = "t";
+        }
+
+        const data = await fetchData("http://161.97.214.82:"+port+"/get-chat-data?chatid="+currentChat+"&username="+username+"&typing="+isTyping);
 
         currentChatData = data;
 
@@ -209,15 +233,31 @@
             otherUser = data.chatters[1];
         }
 
-        const pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+otherUser);
-        const pfpFilename = await pfpFilenameObject.text();
-        const pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+        var pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+otherUser);
+        var pfpFilename = await pfpFilenameObject.text();
+        var pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
 
         document.getElementById("user-pfp").src = pfpPath
 
         document.getElementById("user-bar").onclick = function(){window.location='profile.html?username=' + otherUser}
 
         document.getElementById("chatter-name").textContent = data.name[username];
+
+        for(const chatter of data.chatters) {
+            if(chatter != username) {
+                const clone = statusTemplate.content.cloneNode(true);
+
+                pfpFilenameObject = await fetch("http://161.97.214.82:"+port+"/get-pfp-path?username="+chatter);
+                pfpFilename = await pfpFilenameObject.text();
+                pfpPath = "http://161.97.214.82:"+port+"/pfps/" + pfpFilename;
+
+                clone.querySelector(".status").id = chatter;
+
+                clone.querySelector(".status-image").src = pfpPath;
+
+                statusContainer.appendChild(clone);
+            }
+        }
 
         for(const message of data.contents) {
             await addChat(message);

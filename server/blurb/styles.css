@@ -19,6 +19,7 @@
     top: 0;
     background-color: #333;
     transition: ease 0.2s;
+    z-index: -1;
 }
 
 #friends-bg {
@@ -113,7 +114,7 @@ body {
     top: 11vh;
     left: 0;
     width: 100vw;
-    bottom: 7vh;
+    bottom: 15vh;
     pointer-events: all;
     overflow-y:auto;
 }
@@ -188,15 +189,16 @@ body {
 
 #bar-content-message {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 7%;
+    height: 16vh;
     background-color: #333;
     box-shadow: 0 0 10px #000;
+    z-index: 1;
 }
 
 #bar-content-default {
@@ -224,7 +226,7 @@ body {
 }
 
 #user-img {
-    width:40px;
+    width: 5vh;
     border-radius: 100vh;
     aspect-ratio: 1/1;
     object-fit: cover;
@@ -615,4 +617,37 @@ video {
     transform: translate(-50%, 0);
     margin-top: 50px;
     background-color: #f55;
+}
+
+#status-container {
+    width: 100%;
+    z-index: 2;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    pointer-events: none;
+}
+
+.status-image {
+    height: 5vh;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 100vh;
+}
+
+.status {
+    height: min-content;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 7vh;
+    animation-duration: 0.5s;
+}
+
+.status-typing {
+    margin: 0;
+    font-weight: 100;
 }
