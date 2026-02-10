@@ -499,7 +499,7 @@ app.get("/get-chat-data", (req, res) => {
             chatDataJson.typing = Array.from(typingSet);
         }
 
-        const newChatData = JSON.stringify(userJsonData, null, 2)
+        const newChatData = JSON.stringify(chatDataJson, null, 2)
 
         if(chatData != newChatData) {
             fs.writeFile(`chat${chatid}.json`, newChatData, "utf8", (err, data) => {});
