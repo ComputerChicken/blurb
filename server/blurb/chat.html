@@ -281,8 +281,10 @@
     init();
 
     async function back() {
-        await fetch("http://161.97.214.82:"+port+"/unonline?username="+chatter+"&chatid="+currentChat);
+        await fetch("http://161.97.214.82:"+port+"/unonline?username="+username+"&chatid="+currentChat);
         window.location='index.html'
     }
+
+    window.back = back;
 </script>
 </html>

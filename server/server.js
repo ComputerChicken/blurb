@@ -500,6 +500,8 @@ app.get("/get-chat-data", (req, res) => {
         } else {
             const typingSet = new Set(chatDataJson.typing);
 
+            console.log(chatData);
+
             if(chatData.typing.includes(username)) {
                 typingSet.delete(username);
             }
