@@ -531,6 +531,7 @@ app.get("/get-chat-data", (req, res) => {
 
 // GET endpoint
 app.get("/unonline", (req, res) => {
+    console.log("unloading user")
     const { chatid, username } = req.query;
     const chatData = fs.readFileSync(`chat${chatid}.json`, "utf8");
     const chatDataJson = JSON.parse(chatData);
@@ -552,6 +553,8 @@ app.get("/unonline", (req, res) => {
     if(chatData != newChatData) {
         fs.writeFile(`chat${chatid}.json`, newChatData, "utf8", (err, data) => {});
     }
+
+    res.send("200");
 });
 
 // GET endpoint

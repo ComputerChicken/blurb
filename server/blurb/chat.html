@@ -205,12 +205,17 @@
 
             console.log(data)
 
+            for(const chatterPerson of currentChatData.chatters) {
+                if(chatterPerson != username) {
+                    document.getElementById(chatterPerson).querySelector(".status-typing").textContent = "Offline";
+                }
+            }
             for(const online of data.online) {
                 if(online != username) {
                     console.log(online);
-                    document.getElementById(online).textContent = "Online";
+                    document.getElementById(online).querySelector(".status-typing").textContent = "Online";
                     if(data.typing.includes(online)) {
-                        document.getElementById(online).textContent = "Typing";
+                        document.getElementById(online).querySelector(".status-typing").textContent = "Typing";
                     }
                 }
             }
@@ -281,6 +286,7 @@
     init();
 
     async function back() {
+        console.log("?")
         await fetch("http://161.97.214.82:"+port+"/unonline?username="+username+"&chatid="+currentChat);
         window.location='index.html'
     }
