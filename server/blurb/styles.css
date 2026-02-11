@@ -650,4 +650,6 @@ video {
 .status-typing {
     margin: 0;
     font-weight: 100;
+    font-size: 13px;
+    font-family: monospace;
 }
