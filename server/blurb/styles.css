@@ -267,7 +267,7 @@ input:not([type="file"]) {
 }
 
 button {
-    background-color: #55f;
+    background-color: #a0f;
     border: none;
     border-radius: 100vh;
     color: #fff;

@@ -482,7 +482,7 @@ app.get("/get-chat-data", (req, res) => {
 
         const updatedUserJsonString = JSON.stringify(userJsonData, null, 2);
 
-        fs.writeFile("users.json", updatedUserJsonString, "utf8", (err, data) => {});
+        fs.writeFileSync("users.json", updatedUserJsonString, "utf8");
 
         const chatData = fs.readFileSync(`chat${chatid}.json`, "utf8");
         const chatDataJson = JSON.parse(chatData);
